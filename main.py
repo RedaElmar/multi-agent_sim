@@ -9,7 +9,6 @@ This project implements an autonomous, decentralized swarming strategies includi
     - Dynamic Encirclement 
     - Leminiscatic Arching
     - Pinning Control
-    - Static Shapes (prototype) <-- get rid of this
 
 The strategies requires no human invervention once the target is selected and all agents rely on local knowledge only. 
 Each vehicle makes its own decisions about where to go based on its relative position to other vehicles
@@ -41,7 +40,6 @@ import ctrl_tactic as tactic
 
 # utilities 
 from utils import encirclement_tools as encircle_tools
-from utils import staticShapes_tools as statics
 from utils import pinning_tools, lemni_tools, starling_tools, swarm_metrics, tools, modeller
 #from utils import graph_tools
 
@@ -49,9 +47,9 @@ from utils import pinning_tools, lemni_tools, starling_tools, swarm_metrics, too
 # ------------------
 #np.random.seed(1)
 Ti      =   0         # initial time
-Tf      =   60        # final time (later, add a condition to break out when desirable conditions are met)
+Tf      =   30        # final time (later, add a condition to break out when desirable conditions are met)
 Ts      =   0.02      # sample time
-nVeh    =   13         # number of vehicles
+nVeh    =   7         # number of vehicles
 iSpread =   10         # initial spread of vehicles
 tSpeed  =   0 #0.005         # speed of target
 rVeh    =   0.5         # physical radius of vehicle 
@@ -63,7 +61,7 @@ tactic_type = 'lemni'
                 # circle = encirclement
                 # lemni = dynamic lemniscate
                 # pinning = pinning control
-                # statics = static shapes (prototype)
+
 
 # if using reynolds, need make target an obstacle 
 if tactic_type == 'reynolds':
@@ -295,9 +293,6 @@ while round(t,3) < Tf:
     elif tactic_type == 'lemni':
         trajectory, lemni = lemni_tools.lemni_target(nVeh,lemni_all,state,targets,i,t)
     
-    # if static shapes  
-    elif tactic_type == 'statics':
-        trajectory, lemni = statics.lemni_target(nVeh,lemni_all,state,targets,i,t)
             
     #%% Prep for compute commands (next step)
     # ----------------------------

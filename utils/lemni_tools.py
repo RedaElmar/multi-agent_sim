@@ -22,13 +22,14 @@ from utils import encirclement_tools as encircle_tools
 # tunable
 c1_d        = 2             # gain for position (q)
 c2_d        = 2*np.sqrt(2)  # gain for velocity (p)
-lemni_type  = 4             
+lemni_type  = 5             
 
         # 0 = 3D lemniscate of Gerono - surveillance (/^\)
         # 1 = 3D lemniscate of Gerono - rolling (/^\ -> \_/)
         # 2 = 3D lemniscate of Gerono - mobbing (\_/)
-        # 3 = 2D lemniscate of Gerono
-        # 4 = 2D dumbbell curve (a sextic curve aka "flattened bowtie")
+        # 3 = (in dev still) - deformed circle // lemniscate of Gerono
+        # 4 = (in dev still) - deformed circle // dumbbell curve (a sextic curve aka "flattened bowtie")
+        # 5 = (in dev still) - deformed circle // lemniscate of Bernoulli
 
 test = 0 # are we testing?, default = 0  
 
@@ -108,49 +109,29 @@ def lemni_target(nVeh,lemni_all,state,targets,i,t):
         if lemni_type == (0 or 1 or 2):
             untwist_quat = quat.quatjugate(quat.e2q(untwist*unit_lem.ravel()))
         # if 2D Gerono
-        elif lemni_type == 3:
-            print('NOTE: still need to flatten lemni')
+        elif lemni_type == 3: 
+            untwist_quat = np.zeros(4)
+            #print('lemni type only partially defined')
+            untwist_quat[0] = -np.sqrt(2)*np.sqrt(np.cos(untwist) + 1)/2
+            untwist_quat[1] = -np.sqrt(2)*np.sqrt(1 - np.cos(untwist))/2
+            untwist_quat = quat.quatjugate(untwist_quat)
         # if dumbbell
         elif lemni_type == 4:
             untwist_quat = np.zeros(4)
+            #print('lemni type only partially defined')
             untwist_quat[0] = -np.sqrt(2)*np.sqrt(np.cos(untwist)**2 + 1)/2
             untwist_quat[1] = -np.sqrt(2)*np.sqrt(-(np.cos(untwist) - 1)*(np.cos(untwist) + 1))/2
+            untwist_quat = quat.quatjugate(untwist_quat)
+        # if bernoulli
+        elif lemni_type == 5:
+            untwist_quat = np.zeros(4)
+            #print('lemni type only partially defined')
+            untwist_quat[0] = -np.sqrt(2)*np.sqrt(np.cos(untwist) + 1)/(2*np.sqrt(np.sin(untwist)**2 + 1))
+            untwist_quat[1] = -np.sqrt(2)*np.sqrt(1 - np.cos(untwist))/(2*np.sqrt(np.sin(untwist)**2 + 1))
             untwist_quat = quat.quatjugate(untwist_quat)
     
         # make a quaternion from it
         #untwist_quat = quat.quatjugate(quat.e2q(untwist*unit_lem.ravel()))
-        
-        
-        
-        # ====== TESTING ====== #
-        # if we are testing
-        if test == 1:
-            
-            test1=untwist_quat
-            
-            # pull out last
-            m_theta_prev = lemni_all[i-1,n]
-            
-            # try the pinched lemni
-            untwist_quat = np.zeros(4)
-            
-            # # dirty fix for now
-            # if np.tanh(np.cos(m_theta)) == 0:
-            #     print('divide by zero in test case')
-            #else:
-                #twist_quat[0] = -(1/np.sqrt(2))*np.divide(np.cos(m_theta),np.tanh(np.cos(m_theta)))
-                #twist_quat[1] = -(1/np.sqrt(2))*np.divide(np.sin(m_theta),2)
-            untwist_quat[0] = -np.sqrt(2)*np.sqrt(np.cos(m_theta_prev)**2 + 1)/2
-            untwist_quat[1] = -np.sqrt(2)*np.sqrt(-(np.cos(m_theta_prev) - 1)*(np.cos(m_theta_prev) + 1))/2
-            #untwist_quat[0] = np.cos(m_theta_prev/2)
-            #untwist_quat[1] = np.sin(m_theta_prev/2)
-            untwist_quat = quat.quatjugate(untwist_quat)
-            
-            test2=untwist_quat
-            #print('UNTWIST: ',test1-test2)
-            
-        # ====== TESTING ====== #
-        
         
         # pull out states
         states_q_n = state[0:3,n]
@@ -159,10 +140,6 @@ def lemni_target(nVeh,lemni_all,state,targets,i,t):
         # untwist the agent 
         state_untwisted[0:3,n] = quat.rotate(untwist_quat,states_q_n - targets_n) + targets_n  
  
-
-
-
-            
     # ENCIRCLE -  form a common untwisted circle
     # ------------------------------------------
     
@@ -224,58 +201,29 @@ def lemni_target(nVeh,lemni_all,state,targets,i,t):
             twist_quat = quat.e2q(twist*unit_lem.ravel())
         # if 2D Gerono
         elif lemni_type == 3:
-            print('NOTE: still need to flatten lemni')
+            twist_quat = np.zeros(4)
+            #print('lemni type only partially defined')
+            twist_quat[0] = -np.sqrt(2)*np.sqrt(np.cos(twist) + 1)/2
+            twist_quat[1] = -np.sqrt(2)*np.sqrt(1 - np.cos(twist))/2
+
         # if dumbbell
         elif lemni_type == 4:
             twist_quat = np.zeros(4)
+            #print('lemni type only partially defined')
             twist_quat[0] = -np.sqrt(2)*np.sqrt(np.cos(twist)**2 + 1)/2
-            twist_quat[1] = -np.sqrt(2)*np.sqrt(-(np.cos(twist) - 1)*(np.cos(twist) + 1))/2
-            
-            
-
-        #twist_quat = quat.e2q(twist*unit_lem.ravel())
+            twist_quat[1] = -np.sqrt(2)*np.sqrt(-(np.cos(twist) - 1)*(np.cos(twist) + 1))/2  
         
-        
-        # ====== TESTING ====== #
-        # if we are testing
-        if test == 1:
-            
-            test1=twist_quat
-            
-            # try the pinched lemni
+        # if bernoulli
+        elif lemni_type == 5:
             twist_quat = np.zeros(4)
+            #print('lemni type only partially defined')
+            twist_quat[0] = -np.sqrt(2)*np.sqrt(np.cos(twist) + 1)/(2*np.sqrt(np.sin(twist)**2 + 1))
+            twist_quat[1] = -np.sqrt(2)*np.sqrt(1 - np.cos(twist))/(2*np.sqrt(np.sin(twist)**2 + 1))
             
-            # # dirty fix for now
-            # if np.tanh(np.cos(m_theta)) == 0:
-            #     print('divide by zero in test case')
-            #else:
-                #twist_quat[0] = -(1/np.sqrt(2))*np.divide(np.cos(m_theta),np.tanh(np.cos(m_theta)))
-                #twist_quat[1] = -(1/np.sqrt(2))*np.divide(np.sin(m_theta),2)
-            twist_quat[0] = -np.sqrt(2)*np.sqrt(np.cos(m_theta)**2 + 1)/2
-            twist_quat[1] = -np.sqrt(2)*np.sqrt(-(np.cos(m_theta) - 1)*(np.cos(m_theta) + 1))/2
-            #twist_quat[0] = np.cos(twist/2)
-            #twist_quat[1] = np.sin(twist/2)
-            
-            test2=twist_quat
-            #print('TWIST: ',test1-test2)
-        # ====== TESTING ====== #
-            
-        
-        
+        #twist_quat = quat.e2q(twist*unit_lem.ravel())        
         twist_pos = quat.rotate(twist_quat,target_encircle_shifted)+targets_i  
-        
-        # ====== TESTING ======== #
-        
-        # needto adjust vertical
-
-        
-
-            
-        # ====== TESTING ======== #
-        
         targets_encircle[0:3,m] = twist_pos
         
-
         # twist the trajectory velocity and load it
         w_vector = phi_dot_desired_i[0,m]*twist_perp                        # pretwisted
         w_vector_twisted = quat.rotate(twist_quat,w_vector)                 # twisted 
@@ -288,3 +236,72 @@ def lemni_target(nVeh,lemni_all,state,targets,i,t):
 
 
 
+
+#%% LEGACY code
+
+        # # ====== TESTING ====== #
+        # # if we are testing
+        # if test == 1:
+            
+        #     test1=untwist_quat
+            
+        #     # pull out last
+        #     m_theta_prev = lemni_all[i-1,n]
+            
+        #     # try the pinched lemni
+        #     untwist_quat = np.zeros(4)
+            
+        #     # # dirty fix for now
+        #     # if np.tanh(np.cos(m_theta)) == 0:
+        #     #     print('divide by zero in test case')
+        #     #else:
+        #         #twist_quat[0] = -(1/np.sqrt(2))*np.divide(np.cos(m_theta),np.tanh(np.cos(m_theta)))
+        #         #twist_quat[1] = -(1/np.sqrt(2))*np.divide(np.sin(m_theta),2)
+        #     untwist_quat[0] = -np.sqrt(2)*np.sqrt(np.cos(m_theta_prev)**2 + 1)/2
+        #     untwist_quat[1] = -np.sqrt(2)*np.sqrt(-(np.cos(m_theta_prev) - 1)*(np.cos(m_theta_prev) + 1))/2
+        #     #untwist_quat[0] = np.cos(m_theta_prev/2)
+        #     #untwist_quat[1] = np.sin(m_theta_prev/2)
+        #     untwist_quat = quat.quatjugate(untwist_quat)
+            
+        #     test2=untwist_quat
+        #     #print('UNTWIST: ',test1-test2)
+            
+        # # ====== TESTING ====== #
+        
+        
+        
+        
+        # # ====== TESTING ====== #
+        # # if we are testing
+        # if test == 1:
+            
+        #     test1=twist_quat
+            
+        #     # try the pinched lemni
+        #     twist_quat = np.zeros(4)
+            
+        #     # # dirty fix for now
+        #     # if np.tanh(np.cos(m_theta)) == 0:
+        #     #     print('divide by zero in test case')
+        #     #else:
+        #         #twist_quat[0] = -(1/np.sqrt(2))*np.divide(np.cos(m_theta),np.tanh(np.cos(m_theta)))
+        #         #twist_quat[1] = -(1/np.sqrt(2))*np.divide(np.sin(m_theta),2)
+        #     twist_quat[0] = -np.sqrt(2)*np.sqrt(np.cos(m_theta)**2 + 1)/2
+        #     twist_quat[1] = -np.sqrt(2)*np.sqrt(-(np.cos(m_theta) - 1)*(np.cos(m_theta) + 1))/2
+        #     #twist_quat[0] = np.cos(twist/2)
+        #     #twist_quat[1] = np.sin(twist/2)
+            
+        #     test2=twist_quat
+        #     #print('TWIST: ',test1-test2)
+        # # ====== TESTING ====== #      
+
+
+
+        # ====== TESTING ======== #
+        
+        # needto adjust vertical
+
+        
+
+            
+        # ====== TESTING ======== #

@@ -93,8 +93,6 @@ def animateMe(Ts, t_all, states_all, cmds_all, targets_all, obstacles_all, walls
         mode = 'Mode: Dynamic Encirclement'
     elif tactic_type == 'lemni':
         mode = 'Mode: Dynamic Lemniscate'
-    elif tactic_type == 'statics':
-        mode = 'Mode: Static Shapes'
     
     titleTime = ax.text2D(0.05, 0.95, "", transform=ax.transAxes)
     #titleType1 = ax.text2D(0.95, 0.95, '%s : %s' % ("Lattice separation", d), transform=ax.transAxes, horizontalalignment='right')
