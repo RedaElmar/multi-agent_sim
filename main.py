@@ -9,7 +9,7 @@ This project implements an autonomous, decentralized swarming strategies includi
     - Dynamic Encirclement 
     - Leminiscatic Arching
     - Pinning Control
-    - Static Shapes (prototype)
+    - Static Shapes (prototype) <-- get rid of this
 
 The strategies requires no human invervention once the target is selected and all agents rely on local knowledge only. 
 Each vehicle makes its own decisions about where to go based on its relative position to other vehicles
@@ -49,9 +49,9 @@ from utils import pinning_tools, lemni_tools, starling_tools, swarm_metrics, too
 # ------------------
 #np.random.seed(1)
 Ti      =   0         # initial time
-Tf      =   30        # final time (later, add a condition to break out when desirable conditions are met)
+Tf      =   60        # final time (later, add a condition to break out when desirable conditions are met)
 Ts      =   0.02      # sample time
-nVeh    =   12         # number of vehicles
+nVeh    =   13         # number of vehicles
 iSpread =   10         # initial spread of vehicles
 tSpeed  =   0 #0.005         # speed of target
 rVeh    =   0.5         # physical radius of vehicle 

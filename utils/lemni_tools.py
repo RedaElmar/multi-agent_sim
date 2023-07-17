@@ -20,16 +20,21 @@ from utils import encirclement_tools as encircle_tools
 # -----------
 
 # tunable
-c1_d        = 2             # position (q)
-c2_d        = 2*np.sqrt(2)  # velocity (p)
-eps         = 0.1           # nominally 0.1
-lemni_type  = 0             # 0 = surv, 1 = rolling, 2 = mobbing
+c1_d        = 2             # gain for position (q)
+c2_d        = 2*np.sqrt(2)  # gain for velocity (p)
+lemni_type  = 4             
 
-test = 0 # are we testing?, default = 0?  
+        # 0 = 3D lemniscate of Gerono - surveillance (/^\)
+        # 1 = 3D lemniscate of Gerono - rolling (/^\ -> \_/)
+        # 2 = 3D lemniscate of Gerono - mobbing (\_/)
+        # 3 = 2D lemniscate of Gerono
+        # 4 = 2D dumbbell curve (a sextic curve aka "flattened bowtie")
 
-# inherited from encirclement
+test = 0 # are we testing?, default = 0  
+
 r_desired, phi_dot_d, ref_plane, quat_0 = encircle_tools.get_params() 
 unit_lem    = np.array([1,0,0]).reshape((3,1))    # sets twist orientation (i.e. orientation of lemniscate along x)
+
 quat_0_ = quat.quatjugate(quat_0)                 # used to untwist                               
 
 #%% Useful functions 
@@ -62,62 +67,6 @@ def enforce(tactic_type):
     
     return twist_perp
 
-# sigma norm
-def sigma_norm(z):    
-    norm_sig = (1/eps)*(np.sqrt(1+eps*np.linalg.norm(z)**2)-1)
-    return norm_sig
-
-# transition function (need to do this for each agent)
-def compute_fi_n1p1(states_q, targets, transition_loc, transition_rate):
-    # transition_loc is desired distance from target to center sigmoid
-    prox_i = sigma_norm(states_q[0:3]-targets[0:3])
-    z_i = prox_i-sigma_norm(transition_loc)
-    f_i = 2/(1 + np.exp(-z_i*transition_rate)) -1     
-    return f_i
-
-# transition function (need to do this for each agent)
-def compute_fi_00p1(states_q, targets, transition_loc, transition_rate):
-    # transition_loc is desired distance from target to center sigmoid
-    prox_i = sigma_norm(states_q[0:3]-targets[0:3])
-    z_i = prox_i-sigma_norm(transition_loc)
-    f_i = 1/(1 + np.exp(-z_i*transition_rate))    
-    return f_i
-
-def compute_sign(states_q,targets,quatern):
-    # need to compute the sign (+/-)
-    unit_v = np.array([0,1,0]).reshape((3,1))
-    unit_v_rotated = quat.rotate(quatern,unit_v)
-    divZero = 0.0001
-    # find the corresponding velo vector
-    #unit_v_cross = np.cross(unit_v.ravel(),states_q_shifted) # state needs to be shifted for target
-    sign = np.divide(np.dot(states_q-targets,unit_v_rotated),np.maximum(np.linalg.norm(states_q),divZero))
-    return sign 
-
-def compute_fi_x(states_q, targets, transition_loc, transition_rate):
-    f_i = np.minimum(np.maximum(states_q[0] - targets[0], -1), 1)    
-     
-    return f_i    
-
-
-
-#%% functions for twisting
-
-# smush between -1 and +1 with a sigmoid
-def smush_neg1pos1(z_i, transition_rate):
-    f_i = 2/(1 + np.exp(-z_i*transition_rate)) -1     
-    return f_i
-    
-# smush between 0 and +1 with a sigmoid
-def smush_0pos1(z_i, transition_rate):
-    f_i = 1/(1 + np.exp(-z_i*transition_rate))      
-    return f_i
-
-def compute_fi_n1p1_x(states_qx, targetsx, transition_loc, transition_rate):
-    # transition_loc is desired distance from target to center sigmoid
-    prox_i = sigma_norm(states_qx-targetsx)
-    z_i = prox_i-sigma_norm(transition_loc)
-    f_i = 2/(1 + np.exp(-z_i*transition_rate)) -1     
-    return f_i
 
 def sigma_1(z):    
     sigma_1 = np.divide(z,np.sqrt(1+z**2))    
@@ -154,8 +103,23 @@ def lemni_target(nVeh,lemni_all,state,targets,i,t):
         
         # get the last twist
         untwist = last_twist[n]
+        
+        # if 3D Gerono:
+        if lemni_type == (0 or 1 or 2):
+            untwist_quat = quat.quatjugate(quat.e2q(untwist*unit_lem.ravel()))
+        # if 2D Gerono
+        elif lemni_type == 3:
+            print('NOTE: still need to flatten lemni')
+        # if dumbbell
+        elif lemni_type == 4:
+            untwist_quat = np.zeros(4)
+            untwist_quat[0] = -np.sqrt(2)*np.sqrt(np.cos(untwist)**2 + 1)/2
+            untwist_quat[1] = -np.sqrt(2)*np.sqrt(-(np.cos(untwist) - 1)*(np.cos(untwist) + 1))/2
+            untwist_quat = quat.quatjugate(untwist_quat)
+    
         # make a quaternion from it
-        untwist_quat = quat.quatjugate(quat.e2q(untwist*unit_lem.ravel()))
+        #untwist_quat = quat.quatjugate(quat.e2q(untwist*unit_lem.ravel()))
+        
         
         
         # ====== TESTING ====== #
@@ -194,7 +158,11 @@ def lemni_target(nVeh,lemni_all,state,targets,i,t):
         targets_n = targets[0:3,n] 
         # untwist the agent 
         state_untwisted[0:3,n] = quat.rotate(untwist_quat,states_q_n - targets_n) + targets_n  
-             
+ 
+
+
+
+            
     # ENCIRCLE -  form a common untwisted circle
     # ------------------------------------------
     
@@ -222,15 +190,7 @@ def lemni_target(nVeh,lemni_all,state,targets,i,t):
             # compute the lemni factor
             # -----------------------
             
-            # lemniscate
-            if lemni_type == 0: # travis: this or above - come back and figure out which of these is correct :(
-                # compute and store the lemniscate twist factor (tried a bunch of ways to do this)
-                m_r = np.sqrt((state_untwisted[0,m]-targets[0,m])**2 + (state_untwisted[1,m]-targets[1,m])**2)
-                m_theta = np.arctan2(state_untwisted[1,m]-targets[1,m],state_untwisted[0,m]-targets[0,m]) 
-                m_theta = np.mod(m_theta, 2*np.pi)  #convert to 0 to 2Pi
-                lemni[0,m] = m_theta    
-            
-            # shifting lemninscate    
+            # rolling needs to dynamically adjust the lemni factor  
             if lemni_type == 1: 
                 # compute and store the lemniscate twist factor (tried a bunch of ways to do this)
                 #m_r = np.sqrt((state_untwisted[0,m]-targets[0,m])**2 + (state_untwisted[1,m]-targets[1,m])**2)
@@ -239,18 +199,41 @@ def lemni_target(nVeh,lemni_all,state,targets,i,t):
                 m_shift = - np.pi + 0.1*t
                 lemni[0,m] = m_theta + m_shift
                 
-            # mobbing    
+            # mobbing needs to rotatate by pi (i.e. flip updside down) 
             if lemni_type == 2: 
                 # compute and store the lemniscate twist factor (tried a bunch of ways to do this)
                 m_r = np.sqrt((state_untwisted[0,m]-targets[0,m])**2 + (state_untwisted[1,m]-targets[1,m])**2)
                 m_theta = np.arctan2(state_untwisted[1,m]-targets[1,m],state_untwisted[0,m]-targets[0,m]) 
                 m_theta = np.mod(m_theta, 2*np.pi)  #convert to 0 to 2Pi
-                lemni[0,m] = m_theta - np.pi 
-                
+                lemni[0,m] = m_theta - np.pi
+            
+            # surveillance and others use this
+            else: 
+                # compute and store the lemniscate twist factor (tried a bunch of ways to do this)
+                m_r = np.sqrt((state_untwisted[0,m]-targets[0,m])**2 + (state_untwisted[1,m]-targets[1,m])**2)
+                m_theta = np.arctan2(state_untwisted[1,m]-targets[1,m],state_untwisted[0,m]-targets[0,m]) 
+                m_theta = np.mod(m_theta, 2*np.pi)  #convert to 0 to 2Pi
+                lemni[0,m] = m_theta 
 
         # twist the trajectory position and load it
-        twist = lemni[0,m] #np.pi*lemni[0,m]
-        twist_quat = quat.e2q(twist*unit_lem.ravel())
+        # note: twist is a misleading var name now; consider changing later
+        twist = lemni[0,m] 
+        
+        # if 3D Gerono:
+        if lemni_type == (0 or 1 or 2):
+            twist_quat = quat.e2q(twist*unit_lem.ravel())
+        # if 2D Gerono
+        elif lemni_type == 3:
+            print('NOTE: still need to flatten lemni')
+        # if dumbbell
+        elif lemni_type == 4:
+            twist_quat = np.zeros(4)
+            twist_quat[0] = -np.sqrt(2)*np.sqrt(np.cos(twist)**2 + 1)/2
+            twist_quat[1] = -np.sqrt(2)*np.sqrt(-(np.cos(twist) - 1)*(np.cos(twist) + 1))/2
+            
+            
+
+        #twist_quat = quat.e2q(twist*unit_lem.ravel())
         
         
         # ====== TESTING ====== #
@@ -285,17 +268,14 @@ def lemni_target(nVeh,lemni_all,state,targets,i,t):
         
         # needto adjust vertical
 
+        
+
             
         # ====== TESTING ======== #
-        
         
         targets_encircle[0:3,m] = twist_pos
         
 
-        
-        
-        
-                  
         # twist the trajectory velocity and load it
         w_vector = phi_dot_desired_i[0,m]*twist_perp                        # pretwisted
         w_vector_twisted = quat.rotate(twist_quat,w_vector)                 # twisted 
