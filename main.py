@@ -49,7 +49,7 @@ from utils import pinning_tools, lemni_tools, starling_tools, swarm_metrics, too
 Ti      =   0         # initial time
 Tf      =   30        # final time (later, add a condition to break out when desirable conditions are met)
 Ts      =   0.02      # sample time
-nVeh    =   7         # number of vehicles
+nVeh    =   5         # number of vehicles
 iSpread =   10         # initial spread of vehicles
 tSpeed  =   0 #0.005         # speed of target
 rVeh    =   0.5         # physical radius of vehicle 
@@ -365,8 +365,8 @@ ax.plot(t_all[4::],metrics_order_all[4::,5],':b')
 ax.plot(t_all[4::],metrics_order_all[4::,6],':b')
 ax.fill_between(t_all[4::], metrics_order_all[4::,5], metrics_order_all[4::,6], color = 'blue', alpha = 0.1)
 #note: can include region to note shade using "where = Y2 < Y1
-ax.set(xlabel='Time [s]', ylabel='Mean Distance to Between Agents [m]',
-       title='Convergence to Lattice')
+ax.set(xlabel='Time [s]', ylabel='Mean Distance (with Min/Max Bounds) [m]',
+       title='Separation between Agents')
 #ax.plot([70, 70], [100, 250], '--b', lw=1)
 #ax.hlines(y=5, xmin=Ti, xmax=Tf, linewidth=1, color='r', linestyle='--')
 ax.grid()

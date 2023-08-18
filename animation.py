@@ -16,9 +16,11 @@ plt.rcParams['animation.ffmpeg_path'] = '/usr/local/bin/ffmpeg' #my add - this p
 Writer = animation.writers['ffmpeg']
 writer = Writer(fps=15, metadata=dict(artist='Me'), bitrate=1800)
 
-numFrames = 20 # frame rate (bigger = slower)
-tail = 200
-zoom = 0   # do you want to adjust frames with motion? [0 = no, 1 = yes, 2 = fixed (set below), 3 = fixed_zoom (set below) ]
+numFrames           = 20    # frame rate (bigger = slower)
+tail                = 400
+zoom                = 0     # do you want to adjust frames with motion? [0 = no, 1 = yes, 2 = fixed (set below), 3 = fixed_zoom (set below) ]
+connection_thresh   = 0     # nominally 5.1. how close do agents need to be in order to connect?
+
 
 #def animateMe(Ts, t_all, states_all, cmds_all, targets_all, obstacles_all, walls_plots, showObs, centroid_all, f, r_desired, tactic_type):
 def animateMe(Ts, t_all, states_all, cmds_all, targets_all, obstacles_all, walls_plots, showObs, centroid_all, f, tactic_type, pins_all):
@@ -229,7 +231,7 @@ def animateMe(Ts, t_all, states_all, cmds_all, targets_all, obstacles_all, walls
         # else: 
         #     r_ = r_copy*2        # just to help visualize vehicle interactions
         
-        r_ = 0#5.1
+        r_ = connection_thresh
         
         for j in range (0, nVeh):
         

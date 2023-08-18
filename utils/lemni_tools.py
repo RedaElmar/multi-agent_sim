@@ -12,6 +12,8 @@ Created on Thu Feb 18 14:20:17 2021
 import numpy as np
 import pickle 
 import matplotlib.pyplot as plt
+
+# dependencies
 from utils import quaternions as quat
 from utils import encirclement_tools as encircle_tools
 
@@ -22,21 +24,25 @@ from utils import encirclement_tools as encircle_tools
 # tunable
 c1_d        = 2             # gain for position (q)
 c2_d        = 2*np.sqrt(2)  # gain for velocity (p)
-lemni_type  = 5             
+lemni_type  = 3
+            
+    # // Explcit definition of rotation (https://ieeexplore.ieee.org/document/9931405)
+    #   0 = lemniscate of Gerono - surveillance (/^\)
+    #   1 = lemniscate of Gerono - rolling (/^\ -> \_/)
+    #   2 = lemniscate of Gerono - mobbing (\_/)
+        
+    # // Solved indirectly (see https://github.com/tjards/twisted_circles)
+    #   3 = lemniscate of Gerono (with shift)
+    #   4 = dumbbell curve 
+    #   5 = lemniscate of Bernoulli
 
-        # 0 = 3D lemniscate of Gerono - surveillance (/^\)
-        # 1 = 3D lemniscate of Gerono - rolling (/^\ -> \_/)
-        # 2 = 3D lemniscate of Gerono - mobbing (\_/)
-        # 3 = (in dev still) - deformed circle // lemniscate of Gerono
-        # 4 = (in dev still) - deformed circle // dumbbell curve (a sextic curve aka "flattened bowtie")
-        # 5 = (in dev still) - deformed circle // lemniscate of Bernoulli
-
-test = 0 # are we testing?, default = 0  
-
+# import some parameters from encirclement_tools
 r_desired, phi_dot_d, ref_plane, quat_0 = encircle_tools.get_params() 
-unit_lem    = np.array([1,0,0]).reshape((3,1))    # sets twist orientation (i.e. orientation of lemniscate along x)
 
-quat_0_ = quat.quatjugate(quat_0)                 # used to untwist                               
+# reference frames
+unit_lem    = np.array([1,0,0]).reshape((3,1))  # sets twist orientation (i.e. orientation of lemniscate along x)
+stretch     = -1*r_desired                      # stretch for lemni type 4 (legacy, remove later)
+quat_0_ = quat.quatjugate(quat_0)               # used to untwist                               
 
 #%% Useful functions 
 
@@ -68,11 +74,9 @@ def enforce(tactic_type):
     
     return twist_perp
 
-
 def sigma_1(z):    
     sigma_1 = np.divide(z,np.sqrt(1+z**2))    
     return sigma_1
-
 
 #%% main functions
 
@@ -106,29 +110,60 @@ def lemni_target(nVeh,lemni_all,state,targets,i,t):
         untwist = last_twist[n]
         
         # if 3D Gerono:
-        if lemni_type == (0 or 1 or 2):
+        if lemni_type < 3:
             untwist_quat = quat.quatjugate(quat.e2q(untwist*unit_lem.ravel()))
-        # if 2D Gerono
+        
+        # if Gerono (with shift)
         elif lemni_type == 3: 
             untwist_quat = np.zeros(4)
             #print('lemni type only partially defined')
-            untwist_quat[0] = -np.sqrt(2)*np.sqrt(np.cos(untwist) + 1)/2
-            untwist_quat[1] = -np.sqrt(2)*np.sqrt(1 - np.cos(untwist))/2
+            
+            # old version
+            #untwist_quat[0] = -np.sqrt(2)*np.sqrt(np.cos(untwist) + 1)/2
+            #untwist_quat[1] = -np.sqrt(2)*np.sqrt(1 - np.cos(untwist))/2
+            
+            # new version
+            untwist_quat[0] = -np.sqrt(2)*np.sqrt(1 - np.sin(untwist))/2
+            untwist_quat[1] = -np.sqrt(2)*np.sqrt(np.sin(untwist) + 1)/2
+            
+            # rotate
             untwist_quat = quat.quatjugate(untwist_quat)
+        
         # if dumbbell
         elif lemni_type == 4:
             untwist_quat = np.zeros(4)
             #print('lemni type only partially defined')
+            
+            # old version 
+            ##untwist_quat[0] = -np.sqrt(2)*np.sqrt(np.cos(untwist)**2 + 1)/2
+            #untwist_quat[0] = -np.sqrt(2)*np.sqrt((r_desired*np.cos(untwist)**2 + stretch)/stretch)/2
+            ##untwist_quat[1] = -np.sqrt(2)*np.sqrt(-(np.cos(untwist) - 1)*(np.cos(untwist) + 1))/2
+            #untwist_quat[1] = -np.sqrt(2)*np.sqrt(-(r_desired*np.cos(untwist)**2 - stretch)/stretch)/2
+            
+            # new version
             untwist_quat[0] = -np.sqrt(2)*np.sqrt(np.cos(untwist)**2 + 1)/2
             untwist_quat[1] = -np.sqrt(2)*np.sqrt(-(np.cos(untwist) - 1)*(np.cos(untwist) + 1))/2
+            
+            # rotate
             untwist_quat = quat.quatjugate(untwist_quat)
+            
+        
         # if bernoulli
         elif lemni_type == 5:
             untwist_quat = np.zeros(4)
             #print('lemni type only partially defined')
+            
+            #old version
+            #untwist_quat[0] = -np.sqrt(2)*np.sqrt(np.cos(untwist) + 1)/(2*np.sqrt(np.sin(untwist)**2 + 1))
+            #untwist_quat[1] = -np.sqrt(2)*np.sqrt(1 - np.cos(untwist))/(2*np.sqrt(np.sin(untwist)**2 + 1))
+
+            # new version
             untwist_quat[0] = -np.sqrt(2)*np.sqrt(np.cos(untwist) + 1)/(2*np.sqrt(np.sin(untwist)**2 + 1))
             untwist_quat[1] = -np.sqrt(2)*np.sqrt(1 - np.cos(untwist))/(2*np.sqrt(np.sin(untwist)**2 + 1))
+         
+            #rotate    
             untwist_quat = quat.quatjugate(untwist_quat)
+    
     
         # make a quaternion from it
         #untwist_quat = quat.quatjugate(quat.e2q(untwist*unit_lem.ravel()))
@@ -197,28 +232,52 @@ def lemni_target(nVeh,lemni_all,state,targets,i,t):
         twist = lemni[0,m] 
         
         # if 3D Gerono:
-        if lemni_type == (0 or 1 or 2):
+        if lemni_type < 3:
             twist_quat = quat.e2q(twist*unit_lem.ravel())
-        # if 2D Gerono
+        # if Gerono (with shift)
         elif lemni_type == 3:
             twist_quat = np.zeros(4)
             #print('lemni type only partially defined')
-            twist_quat[0] = -np.sqrt(2)*np.sqrt(np.cos(twist) + 1)/2
-            twist_quat[1] = -np.sqrt(2)*np.sqrt(1 - np.cos(twist))/2
+            
+            # old version
+            #twist_quat[0] = -np.sqrt(2)*np.sqrt(np.cos(twist) + 1)/2
+            #twist_quat[1] = -np.sqrt(2)*np.sqrt(1 - np.cos(twist))/2
+            
+            # new version
+            twist_quat[0] = -np.sqrt(2)*np.sqrt(1 - np.sin(twist))/2
+            twist_quat[1] = -np.sqrt(2)*np.sqrt(np.sin(twist) + 1)/2
 
         # if dumbbell
         elif lemni_type == 4:
             twist_quat = np.zeros(4)
             #print('lemni type only partially defined')
+            
+            # old version
+            #twist_quat[0] = -np.sqrt(2)*np.sqrt(np.cos(twist)**2 + 1)/2
+            #twist_quat[1] = -np.sqrt(2)*np.sqrt(-(np.cos(twist) - 1)*(np.cos(twist) + 1))/2  
+            twist_quat[0] = -np.sqrt(2)*np.sqrt((r_desired*np.cos(twist)**2 + stretch)/stretch)/2
+            twist_quat[1] = -np.sqrt(2)*np.sqrt(-(r_desired*np.cos(twist)**2 - stretch)/stretch)/2
+        
+            # new version
             twist_quat[0] = -np.sqrt(2)*np.sqrt(np.cos(twist)**2 + 1)/2
-            twist_quat[1] = -np.sqrt(2)*np.sqrt(-(np.cos(twist) - 1)*(np.cos(twist) + 1))/2  
+            twist_quat[1] = -np.sqrt(2)*np.sqrt(-(np.cos(twist) - 1)*(np.cos(twist) + 1))/2
+            
+        
         
         # if bernoulli
         elif lemni_type == 5:
             twist_quat = np.zeros(4)
             #print('lemni type only partially defined')
+            
+            # old version
+            #twist_quat[0] = -np.sqrt(2)*np.sqrt(np.cos(twist) + 1)/(2*np.sqrt(np.sin(twist)**2 + 1))
+            #twist_quat[1] = -np.sqrt(2)*np.sqrt(1 - np.cos(twist))/(2*np.sqrt(np.sin(twist)**2 + 1))
+            
+            # new version
             twist_quat[0] = -np.sqrt(2)*np.sqrt(np.cos(twist) + 1)/(2*np.sqrt(np.sin(twist)**2 + 1))
             twist_quat[1] = -np.sqrt(2)*np.sqrt(1 - np.cos(twist))/(2*np.sqrt(np.sin(twist)**2 + 1))
+   
+            
             
         #twist_quat = quat.e2q(twist*unit_lem.ravel())        
         twist_pos = quat.rotate(twist_quat,target_encircle_shifted)+targets_i  
@@ -235,6 +294,15 @@ def lemni_target(nVeh,lemni_all,state,targets,i,t):
     return targets_encircle, lemni
 
 
+#%% to integrate (eqn's for quaternions)
+'''
+[(-sqrt(2)*sqrt(cos(t) + 1)/2, -sqrt(2)*sqrt(1 - cos(t))/2),
+ Matrix([
+ [-sqrt(2)*sqrt(cos(t) + 1)/(2*sqrt(sin(t)**2 + 1))],
+ [-sqrt(2)*sqrt(1 - cos(t))/(2*sqrt(sin(t)**2 + 1))]]),
+ (-sqrt(2)*sqrt(cos(t)**2 + 1)/2, -sqrt(2)*sqrt(-(cos(t) - 1)*(cos(t) + 1))/2),
+ (-sqrt(2)*sqrt(1 - sin(t))/2, -sqrt(2)*sqrt(sin(t) + 1)/2)]
+'''
 
 
 #%% LEGACY code
