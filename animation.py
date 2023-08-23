@@ -19,6 +19,7 @@ writer = Writer(fps=15, metadata=dict(artist='Me'), bitrate=1800)
 numFrames           = 20    # frame rate (bigger = slower)
 tail                = 400
 zoom                = 0     # do you want to adjust frames with motion? [0 = no, 1 = yes, 2 = fixed (set below), 3 = fixed_zoom (set below) ]
+pan                 = 0    # camera pan? 0 = no, 1 = yes (memory-heavy)
 connection_thresh   = 0     # nominally 5.1. how close do agents need to be in order to connect?
 
 
@@ -92,9 +93,9 @@ def animateMe(Ts, t_all, states_all, cmds_all, targets_all, obstacles_all, walls
     if tactic_type == 'reynolds' or tactic_type == 'saber' or tactic_type == 'starling' or tactic_type == 'pinning':
         mode='Mode: '+tactic_type
     elif tactic_type == 'circle':
-        mode = 'Mode: Dynamic Encirclement'
+        mode = 'Mode: Encirclement'
     elif tactic_type == 'lemni':
-        mode = 'Mode: Dynamic Lemniscate'
+        mode = 'Mode: Closed Curves'
     
     titleTime = ax.text2D(0.05, 0.95, "", transform=ax.transAxes)
     #titleType1 = ax.text2D(0.95, 0.95, '%s : %s' % ("Lattice separation", d), transform=ax.transAxes, horizontalalignment='right')
@@ -157,6 +158,21 @@ def animateMe(Ts, t_all, states_all, cmds_all, targets_all, obstacles_all, walls
     # update the lines
     # ----------------
     def update(i):
+        
+        
+        if pan == 1:
+                  
+            # don't allow more than 180
+            up = i%180
+            # if we get over 90
+            if up > 90:
+                # start going down
+                up = 180-up
+            ax.view_init(azim=i, elev = up )
+            
+
+            
+            #elev = 0.01*i
         
              
         time = t_all[i*numFrames]

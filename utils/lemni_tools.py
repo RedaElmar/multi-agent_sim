@@ -22,9 +22,9 @@ from utils import encirclement_tools as encircle_tools
 # -----------
 
 # tunable
-c1_d        = 2             # gain for position (q)
-c2_d        = 2*np.sqrt(2)  # gain for velocity (p)
-lemni_type  = 3
+c1_d        = 1             # gain for position (q)
+c2_d        = 1*np.sqrt(2)  # gain for velocity (p)
+lemni_type  = 5
             
     # // Explcit definition of rotation (https://ieeexplore.ieee.org/document/9931405)
     #   0 = lemniscate of Gerono - surveillance (/^\)
@@ -91,6 +91,33 @@ def compute_cmd(states_q, states_p, targets_enc, targets_v_enc, k_node):
 
 def lemni_target(nVeh,lemni_all,state,targets,i,t):
     
+    
+    # === for experiments only
+    # global lemni_type
+    # run_experiment = 0
+    # # run a standardized experiment, or "dance"
+    # if run_experiment == 1:
+    #     # circle
+    #     if t <= 10:
+    #         lemni_type = 6
+    #     elif t > 10 and t <= 70:
+    #         lemni_type = 5
+    #     # circle
+    #     elif t > 70 and t <= 80:
+    #         lemni_type = 6
+    #     elif t > 80 and t <= 140:
+    #         lemni_type = 4
+    #     # circle
+    #     elif t > 140 and t <= 150:
+    #         lemni_type = 6
+    #     elif t > 150 and t <= 210:
+    #         lemni_type = 3
+    #     else:
+    #         lemni_type = 3
+        
+    # =======================
+        
+         
     # initialize the lemni twist factor
     lemni = np.zeros([1, nVeh])
     
@@ -139,6 +166,13 @@ def lemni_target(nVeh,lemni_all,state,targets,i,t):
             untwist_quat[1] = -np.sqrt(2)*np.sqrt(1 - np.cos(untwist))/(2*np.sqrt(np.sin(untwist)**2 + 1))
             #rotate    
             untwist_quat = quat.quatjugate(untwist_quat)
+        
+        else:
+            # bypass
+            untwist_quat =  np.zeros(4)
+            untwist_quat[0] = 1
+            twist_quat =  untwist_quat
+            
     
         
         # pull out states

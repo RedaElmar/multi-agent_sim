@@ -47,10 +47,10 @@ from utils import pinning_tools, lemni_tools, starling_tools, swarm_metrics, too
 # ------------------
 #np.random.seed(1)
 Ti      =   0         # initial time
-Tf      =   90        # final time (later, add a condition to break out when desirable conditions are met)
+Tf      =   30     # final time (later, add a condition to break out when desirable conditions are met)
 Ts      =   0.02      # sample time
-nVeh    =   12         # number of vehicles
-iSpread =   10         # initial spread of vehicles
+nVeh    =   5         # number of vehicles
+iSpread =   15         # initial spread of vehicles
 tSpeed  =   0 #0.005         # speed of target
 rVeh    =   0.5         # physical radius of vehicle 
 
@@ -119,7 +119,7 @@ params = np.zeros((4,nVeh))  # store dynamic parameters
 
 #%% Define obstacles (kind of a manual process right now)
 # ------------------------------------------------------
-nObs    = 15     # number of obstacles 
+nObs    = 0     # number of obstacles 
 vehObs  = 0     # include other vehicles as obstacles [0 = no, 1 = yes] 
 
 # there are no obstacle, but we need to make target an obstacle 
@@ -334,7 +334,7 @@ while round(t,3) < Tf:
 #%% Produce animation of simulation
 # ---------------------------------
 #print('here1')
-showObs     = 1 # (0 = don't show obstacles, 1 = show obstacles, 2 = show obstacles + floors/walls)
+showObs     = 0 # (0 = don't show obstacles, 1 = show obstacles, 2 = show obstacles + floors/walls)
 # show_B_max  = 1 # highlight the max influencer? (0 = np, 1 = yes)
 # if tactic_type == 'pinning' and show_B_max == 1:
 #     # find the max influencer in the graph
@@ -373,6 +373,22 @@ ax.grid()
 
 #fig.savefig("test.png")
 plt.show()
+
+
+#%% plot radii from target
+radii = np.zeros([states_all.shape[2],states_all.shape[0]])
+for i in range(0,states_all.shape[0]):
+    for j in range(0,states_all.shape[2]):
+        radii[j,i] = np.linalg.norm(states_all[i,:,j] - targets_all[i,:,j])
+        
+fig, ax = plt.subplots()
+for j in range(0,states_all.shape[2]):
+    ax.plot(t_all[4::],radii[j,4::].ravel(),'-b')
+ax.set(xlabel='Time [s]', ylabel='Distance from Target for Each Agent [m]',
+       title='Distance from Target')
+plt.axhline(y = 5, color = 'k', linestyle = '--')
+plt.show()
+
 
 #%% Save stuff
 
