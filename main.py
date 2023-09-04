@@ -284,11 +284,15 @@ while round(t,3) < Tf:
     #%% Compute Trajectory
     # --------------------
     
-    # exclusion - how many (random) agents to exclude from trajectory
-    exclusion = 1
-    # change inputs below (to do)
+    # exclusion - which agents to exclude (manual, for now)
+    #exclusion = [2,5]
+    #state_ = state.copy()
+    #for i in exclusion:
+    #    state_ = np.delete(state_, i, 1)
     
-         
+
+    
+#%%         
     #if flocking
     if tactic_type == 'reynolds' or tactic_type == 'saber' or tactic_type == 'starling' or tactic_type == 'pinning':
         trajectory = targets 
@@ -299,7 +303,9 @@ while round(t,3) < Tf:
     
     # if lemniscating
     elif tactic_type == 'lemni':
-        trajectory, lemni = lemni_tools.lemni_target(nVeh,lemni_all,state,targets,i,t)
+        #trajectory, lemni = lemni_tools.lemni_target(nVeh,lemni_all,state,targets,i,t)
+        trajectory, lemni = lemni_tools.lemni_target(lemni_all,state,targets,i,t)
+
     
             
     #%% Prep for compute commands (next step)

@@ -20,7 +20,7 @@ pan                 = 0     # camera pan? 0 = no, 1 = yes (memory-heavy)
 connection          = 1     # show connections?
 connection_thresh   = 5.1   # nominally 5.1. how close do agents need to be in order to connect?
 head                = 0.2   # size of head pointing forward (shows directionality)
-
+pins_overide        = 1     # default 0, overides using pin variable for colors
 
 
 # main animation function
@@ -221,7 +221,7 @@ def animateMe(Ts, t_all, states_all, cmds_all, targets_all, obstacles_all, walls
                     lines_tails[j].set_color('b')
                     
             # set colors (based on pins)
-            if tactic_type == 'pinning':
+            if tactic_type == 'pinning' or pins_overide == 1:
             
                 #if pin_matrix[j,j] == 1:
                 if pins_all[i*numFrames,j,j] == 1:
@@ -300,7 +300,7 @@ def animateMe(Ts, t_all, states_all, cmds_all, targets_all, obstacles_all, walls
         
         
 
-    ani = animation.FuncAnimation(fig=fig, func=update, blit=False, frames=len(t_all[0:-2:numFrames]), interval=(Ts*100*numFrames))
+    ani = animation.FuncAnimation(fig=fig, func=update, blit=False, frames=len(t_all[0:-2:numFrames]), interval=(Ts*500*numFrames))
     ani.save('Figs/test_animation3D.gif')
     plt.show()
 
