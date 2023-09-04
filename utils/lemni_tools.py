@@ -24,7 +24,7 @@ from utils import encirclement_tools as encircle_tools
 # tunable
 c1_d        = 1             # gain for position (q)
 c2_d        = 1*np.sqrt(2)  # gain for velocity (p)
-lemni_type  = 5
+lemni_type  = 4
             
     # // Explcit definition of rotation (https://ieeexplore.ieee.org/document/9931405)
     #   0 = lemniscate of Gerono - surveillance (/^\)
@@ -43,6 +43,10 @@ r_desired, phi_dot_d, ref_plane, quat_0 = encircle_tools.get_params()
 unit_lem    = np.array([1,0,0]).reshape((3,1))  # sets twist orientation (i.e. orientation of lemniscate along x)
 stretch     = -1*r_desired                      # stretch for lemni type 4 (legacy, remove later)
 quat_0_ = quat.quatjugate(quat_0)               # used to untwist                               
+
+
+#%% Swarm membership
+mbrs = 4    # 0 = all; 1+ denotes how many (randomly selected)
 
 #%% Useful functions 
 
@@ -91,6 +95,23 @@ def compute_cmd(states_q, states_p, targets_enc, targets_v_enc, k_node):
 
 def lemni_target(nVeh,lemni_all,state,targets,i,t):
     
+    # # if we are excluding certain agents
+    # if mbrs > 0:
+        
+    #     #save the full size
+    #     nVeh_full = nVeh
+    #     #lemni_full = np.zeros([1, nVeh_full])
+    #     #targets_full= targets
+        
+    #     # clip to subset
+    #     nVeh = mbrs
+    #     lemni_all = lemni_all[:,0:mbrs]
+    #     state = state[:,0:mbrs]
+    #     targets = targets[:,0:mbrs]
+        
+    # note: if mbrs > 0, won't work yet. Need to re-add these at the return
+    #  so it is compatable with the larger simulation.
+        
     
     # === for experiments only
     # global lemni_type
@@ -173,7 +194,6 @@ def lemni_target(nVeh,lemni_all,state,targets,i,t):
             untwist_quat[0] = 1
             twist_quat =  untwist_quat
             
-    
         
         # pull out states
         states_q_n = state[0:3,n]
@@ -273,7 +293,23 @@ def lemni_target(nVeh,lemni_all,state,targets,i,t):
         twist_v_vector = np.cross(w_vector_twisted.ravel(),state_m_shifted)
         targets_encircle[3,m] =  - twist_v_vector[0] 
         targets_encircle[4,m] =  - twist_v_vector[1] 
-        targets_encircle[5,m] =  - twist_v_vector[2]     
+        targets_encircle[5,m] =  - twist_v_vector[2]
+        
+        
+        # rebuild the full swarm (including non-members)
+        # if mbrs > 0:
+            
+        #     lemni_full = np.zeros([1, nVeh_full])
+        #     lemni_full[0,0:mbrs] = lemni[0,0:mbrs]
+        #     lemni = lemni_full
+            
+        #     targets_full = np.zeros([6,nVeh_full])
+        #     targets_full[:,0:mbrs] = targets_encircle[:,0:mbrs]
+        #     targets_encircle = targets_full
+            
+            
+        
+        
 
     return targets_encircle, lemni
 

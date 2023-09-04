@@ -34,7 +34,8 @@ plt.style.use('default')
 #plt.style.use('Solarize_Light2')
 
 # from root folder
-import animation 
+#import animation 
+import animation
 import dynamics_node as node
 import ctrl_tactic as tactic 
 
@@ -49,7 +50,7 @@ from utils import pinning_tools, lemni_tools, starling_tools, swarm_metrics, too
 Ti      =   0         # initial time
 Tf      =   30     # final time (later, add a condition to break out when desirable conditions are met)
 Ts      =   0.02      # sample time
-nVeh    =   5         # number of vehicles
+nVeh    =   7         # number of vehicles
 iSpread =   15         # initial spread of vehicles
 tSpeed  =   0 #0.005         # speed of target
 rVeh    =   0.5         # physical radius of vehicle 
@@ -204,7 +205,9 @@ lemni_all           = np.zeros([nSteps, nVeh])
 nMetrics            = 12 # there are 11 positions being used.    
 metrics_order_all   = np.zeros((nSteps,nMetrics))
 metrics_order       = np.zeros((1,nMetrics))
-pins_all            = np.zeros([nSteps, nVeh, nVeh])
+pins_all            = np.zeros([nSteps, nVeh, nVeh]) 
+# note: for pinning control, pins denote pins as a 1
+# also used in lemni to denote membership in swarm as 1
 
 # store the initial conditions
 t_all[0]                = Ti
@@ -280,6 +283,11 @@ while round(t,3) < Tf:
         
     #%% Compute Trajectory
     # --------------------
+    
+    # exclusion - how many (random) agents to exclude from trajectory
+    exclusion = 1
+    # change inputs below (to do)
+    
          
     #if flocking
     if tactic_type == 'reynolds' or tactic_type == 'saber' or tactic_type == 'starling' or tactic_type == 'pinning':
@@ -342,7 +350,9 @@ showObs     = 0 # (0 = don't show obstacles, 1 = show obstacles, 2 = show obstac
 #     B = graph_tools.betweenness(G)
 #     B_max = max(B, key=B.get)
 #     pins_all[:,B_max,B_max] = 2
+#ani = animation.animateMe(Ts, t_all, states_all, cmds_all, targets_all[:,0:3,:], obstacles_all, walls_plots, showObs, centroid_all, f_all, tactic_type, pins_all)    
 ani = animation.animateMe(Ts, t_all, states_all, cmds_all, targets_all[:,0:3,:], obstacles_all, walls_plots, showObs, centroid_all, f_all, tactic_type, pins_all)    
+    
 
 
 #%% Graph analysis
