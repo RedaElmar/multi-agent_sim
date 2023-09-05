@@ -4,8 +4,14 @@
 Created on Mon Sep  4 15:31:52 2023
 
 @author: tjards
+
+New and improved
+
 """
 
+
+# import stuff
+# ------------
 from matplotlib import pyplot as plt
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
@@ -14,10 +20,10 @@ from matplotlib import animation
 # plotting parameters
 # -------------------
 numFrames           = 20    # frame rate (bigger = slower)
-tail                = 400   # trailing trajectory length 
-zoom                = 1     # do you want to adjust frames with motion? [0 = no, 1 = yes, 2 = fixed (set below), 3 = fixed_zoom (set below) ]
-pan                 = 1     # camera pan? 0 = no, 1 = yes (memory-heavy)
-connection          = 0     # show connections?
+tail                = 40   # trailing trajectory length 
+zoom                = 0     # do you want to adjust frames with motion? [0 = no, 1 = yes, 2 = fixed (set below), 3 = fixed_zoom (set below) ]
+pan                 = 0     # camera pan? 0 = no, 1 = yes (memory-heavy)
+connection          = 1     # show connections?
 connection_thresh   = 5.1   # nominally 5.1. how close do agents need to be in order to connect?
 head                = 0.2   # size of head pointing forward (shows directionality)
 pins_overide        = 1     # default 0, overides using pin variable for colors

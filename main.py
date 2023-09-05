@@ -7,11 +7,11 @@ This project implements an autonomous, decentralized swarming strategies includi
     - Olfati-Saber flocking
     - Starling flocking
     - Dynamic Encirclement 
-    - Leminiscatic Arching
     - Pinning Control
+    - Autonomous Assembly of Closed Curves
 
 The strategies requires no human invervention once the target is selected and all agents rely on local knowledge only. 
-Each vehicle makes its own decisions about where to go based on its relative position to other vehicles
+Each vehicle makes its own decisions about where to go based on its relative position to other vehicles.
 
 Created on Tue Dec 22 11:48:18 2020
 
@@ -33,6 +33,7 @@ plt.style.use('default')
 #plt.style.available
 #plt.style.use('Solarize_Light2')
 import copy
+import random
 
 # from root folder
 #import animation 
@@ -48,22 +49,22 @@ from utils import pinning_tools, lemni_tools, starling_tools, swarm_metrics, too
 #%% Setup Simulation
 # ------------------
 #np.random.seed(1)
-Ti      =   0         # initial time
-Tf      =   240     # final time (later, add a condition to break out when desirable conditions are met)
-Ts      =   0.02      # sample time
-nVeh    =   10         # number of vehicles
-iSpread =   25         # initial spread of vehicles
-tSpeed  =   0 #0.005         # speed of target
-rVeh    =   0.5         # physical radius of vehicle 
+Ti      =   0       # initial time
+Tf      =   30      # final time (later, add a condition to break out when desirable conditions are met)
+Ts      =   0.02    # sample time
+nVeh    =   10      # number of vehicles
+iSpread =   15      # initial spread of vehicles
+tSpeed  =   0       # speed of target
+rVeh    =   0.5     # physical radius of vehicle 
+exclusion = []      # initialization of what agents to exclude, default empty
 
 tactic_type = 'lemni'     
                 # reynolds = Reynolds flocking + Olfati-Saber obstacle
                 # saber = Olfati-Saber flocking
                 # starling = swar like starlings 
                 # circle = encirclement
-                # lemni = dynamic lemniscate
+                # lemni = dynamic lemniscates and other closed curves
                 # pinning = pinning control
-
 
 # if using reynolds, need make target an obstacle 
 if tactic_type == 'reynolds':
@@ -86,8 +87,6 @@ state[5,:] = 0                                                      # velocity (
 centroid = tools.centroid(state[0:3,:].transpose())
 centroid_v = tools.centroid(state[3:6,:].transpose())
 # select a pin (for pinning control)
-#pin_matrix = pinning_tools.select_pins_components(state[0:3,:],'gramian')
-
 pin_matrix = np.zeros((nVeh,nVeh))
 if tactic_type == 'pinning':
     pin_matrix = pinning_tools.select_pins_components(state[0:3,:])
@@ -114,6 +113,7 @@ error = state[0:3,:] - targets[0:3,:]
 # Other Parameters
 # ----------------
 params = np.zeros((4,nVeh))  # store dynamic parameters
+
 # do I want to model in realtime?
 #if real_time_model == 'yes':
 #    swarm_model = modeller.model()
@@ -208,7 +208,7 @@ metrics_order_all   = np.zeros((nSteps,nMetrics))
 metrics_order       = np.zeros((1,nMetrics))
 pins_all            = np.zeros([nSteps, nVeh, nVeh]) 
 # note: for pinning control, pins denote pins as a 1
-# also used in lemni to denote membership in swarm as 1
+# also used in lemni to denote membership in swarm as 0
 
 # store the initial conditions
 t_all[0]                = Ti
@@ -238,14 +238,13 @@ while round(t,3) < Tf:
     targets[1,:] = 100*np.sin(tSpeed*t)*np.cos(tSpeed*t)  # targets[1,:] + tSpeed*0.005
     targets[2,:] = 100*np.sin(tSpeed*t)*np.sin(tSpeed*t)+15  # targets[2,:] + tSpeed*0.0005
     
-    # For pinning application, we set the first agent as the "pin",
+    # For pinning application, we may set the first agent as the "pin",
     # which means all other targets have to be set to the pin
     # comment out for non-pinning control
     # ------------------------------------------------------------
     #targets[0,1::] = state[0,0]
     #targets[1,1::] = state[1,0]
     #targets[2,1::] = state[2,0]
-    
     
     # Update the obstacles (if required)
     # ----------------------------------
@@ -257,7 +256,6 @@ while round(t,3) < Tf:
     # modeller: load the current states (x,v), centroid states (x,v) and inputs (of the first agent)
     # -------------------------------------------------------------------------------
     #swarm_model.update_stream_x(np.concatenate((np.array(state[0:6,0],ndmin=2).transpose(),centroid, centroid_v, np.array(cmd[0:3,0],ndmin=2).transpose()),axis=0))
-
 
     # Evolve the states
     # -----------------
@@ -285,33 +283,39 @@ while round(t,3) < Tf:
     #%% Compute Trajectory
     # --------------------
      
+    # EXPIRMENT # 1 - exclude random agents from the swarm every 10 seconds
     # select which agents to exclude (manually)
-    
-    # for simulation
-    if t < 20:
-        exclusion = [2]
-    if t > 20 and t <= 45:
-        exclusion = [2,7]
-    if t > 45 and t <= 65:
-        exclusion = [1]
-    if t > 45 and t <= 75:
-        exclusion = [1,6]
-    if t > 75 and t <= 90:
-        exclusion = [3]
-    if t > 75 and t <= 100:
-        exclusion = [3,7]
-    if t > 100 and t <= 115:
-        exclusion = [9]
-    if t > 115 and t <= 120:
-        exclusion = [5]
-    if t > 120 and t <= 150:
-        exclusion = [4]
-    if t > 150 and t <= 185:
-        exclusion = [4,8]
-    if t > 185 and t <= 200:
-        exclusion = [6]
+    # every 10 seconds
+    #if t%10 < Ts:
+        # randomly exclude
+        #exclusion = [random.randint(0, nVeh-1)]
+        #print(exclusion)
         
-        
+    # EXPIRMENT # 2 - manually exclude agents from the swarm
+    # # for simulation
+    # if t < 20:
+    #     exclusion = [2]
+    # if t > 20 and t <= 45:
+    #     exclusion = [2,7]
+    # if t > 45 and t <= 65:
+    #     exclusion = [1]
+    # if t > 45 and t <= 75:
+    #     exclusion = [1,6]
+    # if t > 75 and t <= 90:
+    #     exclusion = [3]
+    # if t > 75 and t <= 100:
+    #     exclusion = [3,7]
+    # if t > 100 and t <= 115:
+    #     exclusion = [9]
+    # if t > 115 and t <= 120:
+    #     exclusion = [5]
+    # if t > 120 and t <= 150:
+    #     exclusion = [4]
+    # if t > 150 and t <= 185:
+    #     exclusion = [4,8]
+    # if t > 185 and t <= 200:
+    #     exclusion = [6]
+           
     # create a temp exlusionary set
     state_ = np.delete(state, [exclusion], axis = 1)
     targets_ = np.delete(targets, [exclusion], axis = 1)
@@ -355,7 +359,6 @@ while round(t,3) < Tf:
     metrics_order[0,7:9]    = swarm_metrics.energy(cmd)
     metrics_order[0,9:12]   = swarm_metrics.spacing(states_q)
         
-        
     # load the updated centroid states (x,v)
     # ---------------------------------------
     #swarm_model.update_stream_y(np.concatenate((np.array(state[0:6,0],ndmin=2).transpose(),centroid, centroid_v),axis=0))
@@ -364,7 +367,6 @@ while round(t,3) < Tf:
     #    swarm_model.count_x    = -1
     #    swarm_model.count_y    = -1
 
-    
     # Add other vehicles as obstacles (optional, default = 0)
     # -------------------------------------------------------
     if vehObs == 0: 
@@ -391,22 +393,10 @@ showObs     = 0 # (0 = don't show obstacles, 1 = show obstacles, 2 = show obstac
 #ani = animation.animateMe(Ts, t_all, states_all, cmds_all, targets_all[:,0:3,:], obstacles_all, walls_plots, showObs, centroid_all, f_all, tactic_type, pins_all)    
 ani = animation.animateMe(Ts, t_all, states_all, cmds_all, targets_all[:,0:3,:], obstacles_all, walls_plots, showObs, centroid_all, f_all, tactic_type, pins_all)    
     
-
-
-#%% Graph analysis
-# calculate inbetweenness
-#G = graph_tools.build_graph(states_q, 6)
-#D = graph_tools.deg_matrix(states_q, 6)
-#A = graph_tools.deg_matrix(states_q, 6)
-#components = graph_tools.find_connected_components_A(A)
-#B = graph_tools.betweenness(G)
-# pull out influncer
-#B_max = max(B, key=B.get)
-
-
-#%% Produce plot
+#%% Produce plots
 # --------------
 
+# separtion 
 fig, ax = plt.subplots()
 ax.plot(t_all[4::],metrics_order_all[4::,1],'-b')
 ax.plot(t_all[4::],metrics_order_all[4::,5],':b')
@@ -418,12 +408,9 @@ ax.set(xlabel='Time [s]', ylabel='Mean Distance (with Min/Max Bounds) [m]',
 #ax.plot([70, 70], [100, 250], '--b', lw=1)
 #ax.hlines(y=5, xmin=Ti, xmax=Tf, linewidth=1, color='r', linestyle='--')
 ax.grid()
-
-#fig.savefig("test.png")
 plt.show()
 
-
-#%% plot radii from target
+# radii from target
 radii = np.zeros([states_all.shape[2],states_all.shape[0]])
 for i in range(0,states_all.shape[0]):
     for j in range(0,states_all.shape[2]):
@@ -437,9 +424,8 @@ ax.set(xlabel='Time [s]', ylabel='Distance from Target for Each Agent [m]',
 plt.axhline(y = 5, color = 'k', linestyle = '--')
 plt.show()
 
-
-#%% Save stuff
-
+#%% Save data
+# -----------
 pickle_out = open("Data/t_all.pickle","wb")
 pickle.dump(t_all, pickle_out)
 pickle_out.close()

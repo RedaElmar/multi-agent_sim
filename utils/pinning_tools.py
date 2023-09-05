@@ -64,7 +64,7 @@ c1_g = 2                # tracking (for the pins)
 c2_g = 2*np.sqrt(2)
 
 # pinning method
-method = 'between'
+method = 'gramian'
 
     # gramian   = based on controllability gramian
     # degree    = based on degree centrality 

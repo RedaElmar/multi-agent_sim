@@ -44,10 +44,6 @@ unit_lem    = np.array([1,0,0]).reshape((3,1))  # sets twist orientation (i.e. o
 stretch     = -1*r_desired                      # stretch for lemni type 4 (legacy, remove later)
 quat_0_ = quat.quatjugate(quat_0)               # used to untwist                               
 
-
-#%% Swarm membership
-#mbrs = 4    # 0 = all; 1+ denotes how many (randomly selected)
-
 #%% Useful functions 
 
 def check_targets(targets):
@@ -97,55 +93,35 @@ def lemni_target(lemni_all,state,targets,i,t):
     
     nVeh = state.shape[1]
     
-    
-    # # if we are excluding certain agents
-    # if mbrs > 0:
-        
-    #     #save the full size
-    #     nVeh_full = nVeh
-    #     #lemni_full = np.zeros([1, nVeh_full])
-    #     #targets_full= targets
-        
-    #     # clip to subset
-    #     nVeh = mbrs
-    #     lemni_all = lemni_all[:,0:mbrs]
-    #     state = state[:,0:mbrs]
-    #     targets = targets[:,0:mbrs]
-        
-    # note: if mbrs > 0, won't work yet. Need to re-add these at the return
-    #  so it is compatable with the larger simulation.
-        
-    
     # === for experiments only
-    global lemni_type
-    run_experiment = 1
-    # run a standardized experiment, or "dance"
-    if run_experiment == 1:
-        # circle
-        if t <= 10:
-            lemni_type = 6
-        elif t > 10 and t <= 70:
-            lemni_type = 5
-        # circle
-        elif t > 70 and t <= 80:
-            lemni_type = 6
-        elif t > 80 and t <= 140:
-            lemni_type = 4
-        # circle
-        elif t > 140 and t <= 150:
-            lemni_type = 6
-        elif t > 150 and t <= 210:
-            lemni_type = 3
-        else:
-            lemni_type = 3
+    # global lemni_type
+    # run_experiment = 1
+    # # run a standardized experiment, or "dance"
+    # if run_experiment == 1:
+    #     # circle
+    #     if t <= 10:
+    #         lemni_type = 6
+    #     elif t > 10 and t <= 70:
+    #         lemni_type = 5
+    #     # circle
+    #     elif t > 70 and t <= 80:
+    #         lemni_type = 6
+    #     elif t > 80 and t <= 140:
+    #         lemni_type = 4
+    #     # circle
+    #     elif t > 140 and t <= 150:
+    #         lemni_type = 6
+    #     elif t > 150 and t <= 210:
+    #         lemni_type = 3
+    #     else:
+    #         lemni_type = 3
         
     # =======================
-        
          
     # initialize the lemni twist factor
     lemni = np.zeros([1, nVeh])
     
-    # if mobbing, offset targets up
+    # if mobbing, can offset targets up
     #if lemni_type == 2:
     #    targets[2,:] += r_desired
 
@@ -296,23 +272,7 @@ def lemni_target(lemni_all,state,targets,i,t):
         twist_v_vector = np.cross(w_vector_twisted.ravel(),state_m_shifted)
         targets_encircle[3,m] =  - twist_v_vector[0] 
         targets_encircle[4,m] =  - twist_v_vector[1] 
-        targets_encircle[5,m] =  - twist_v_vector[2]
-        
-        
-        # rebuild the full swarm (including non-members)
-        # if mbrs > 0:
-            
-        #     lemni_full = np.zeros([1, nVeh_full])
-        #     lemni_full[0,0:mbrs] = lemni[0,0:mbrs]
-        #     lemni = lemni_full
-            
-        #     targets_full = np.zeros([6,nVeh_full])
-        #     targets_full[:,0:mbrs] = targets_encircle[:,0:mbrs]
-        #     targets_encircle = targets_full
-            
-            
-        
-        
+        targets_encircle[5,m] =  - twist_v_vector[2]      
 
     return targets_encircle, lemni
 
