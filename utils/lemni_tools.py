@@ -117,27 +117,27 @@ def lemni_target(lemni_all,state,targets,i,t):
         
     
     # === for experiments only
-    # global lemni_type
-    # run_experiment = 0
-    # # run a standardized experiment, or "dance"
-    # if run_experiment == 1:
-    #     # circle
-    #     if t <= 10:
-    #         lemni_type = 6
-    #     elif t > 10 and t <= 70:
-    #         lemni_type = 5
-    #     # circle
-    #     elif t > 70 and t <= 80:
-    #         lemni_type = 6
-    #     elif t > 80 and t <= 140:
-    #         lemni_type = 4
-    #     # circle
-    #     elif t > 140 and t <= 150:
-    #         lemni_type = 6
-    #     elif t > 150 and t <= 210:
-    #         lemni_type = 3
-    #     else:
-    #         lemni_type = 3
+    global lemni_type
+    run_experiment = 1
+    # run a standardized experiment, or "dance"
+    if run_experiment == 1:
+        # circle
+        if t <= 10:
+            lemni_type = 6
+        elif t > 10 and t <= 70:
+            lemni_type = 5
+        # circle
+        elif t > 70 and t <= 80:
+            lemni_type = 6
+        elif t > 80 and t <= 140:
+            lemni_type = 4
+        # circle
+        elif t > 140 and t <= 150:
+            lemni_type = 6
+        elif t > 150 and t <= 210:
+            lemni_type = 3
+        else:
+            lemni_type = 3
         
     # =======================
         

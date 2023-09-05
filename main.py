@@ -49,10 +49,10 @@ from utils import pinning_tools, lemni_tools, starling_tools, swarm_metrics, too
 # ------------------
 #np.random.seed(1)
 Ti      =   0         # initial time
-Tf      =   60     # final time (later, add a condition to break out when desirable conditions are met)
+Tf      =   240     # final time (later, add a condition to break out when desirable conditions are met)
 Ts      =   0.02      # sample time
-nVeh    =   7         # number of vehicles
-iSpread =   15         # initial spread of vehicles
+nVeh    =   10         # number of vehicles
+iSpread =   25         # initial spread of vehicles
 tSpeed  =   0 #0.005         # speed of target
 rVeh    =   0.5         # physical radius of vehicle 
 
@@ -285,14 +285,37 @@ while round(t,3) < Tf:
     #%% Compute Trajectory
     # --------------------
      
-    # ***** TEST ***** #
-    exclusion = [2,5]               # which agents to exclude (manual, for now)
-    # remove excluded
+    # select which agents to exclude (manually)
+    
+    # for simulation
+    if t < 20:
+        exclusion = [2]
+    if t > 20 and t <= 45:
+        exclusion = [2,7]
+    if t > 45 and t <= 65:
+        exclusion = [1]
+    if t > 45 and t <= 75:
+        exclusion = [1,6]
+    if t > 75 and t <= 90:
+        exclusion = [3]
+    if t > 75 and t <= 100:
+        exclusion = [3,7]
+    if t > 100 and t <= 115:
+        exclusion = [9]
+    if t > 115 and t <= 120:
+        exclusion = [5]
+    if t > 120 and t <= 150:
+        exclusion = [4]
+    if t > 150 and t <= 185:
+        exclusion = [4,8]
+    if t > 185 and t <= 200:
+        exclusion = [6]
+        
+        
+    # create a temp exlusionary set
     state_ = np.delete(state, [exclusion], axis = 1)
     targets_ = np.delete(targets, [exclusion], axis = 1)
     lemni_all_ = np.delete(lemni_all, [exclusion], axis = 1)
-    
-    # ***** TEST ***** #
         
     #if flocking
     if tactic_type == 'reynolds' or tactic_type == 'saber' or tactic_type == 'starling' or tactic_type == 'pinning':
@@ -300,24 +323,22 @@ while round(t,3) < Tf:
     
     # if encircling
     if tactic_type == 'circle':
-        trajectory, _ = encircle_tools.encircle_target(targets, state)
+        #trajectory, _ = encircle_tools.encircle_target(targets, state)
+        trajectory, _ = encircle_tools.encircle_target(targets_, state_)
     
     # if lemniscating
     elif tactic_type == 'lemni':
-        #trajectory, lemni = lemni_tools.lemni_target(nVeh,lemni_all,state,targets,i,t)
         #trajectory, lemni = lemni_tools.lemni_target(lemni_all,state,targets,i,t)
         trajectory, lemni = lemni_tools.lemni_target(lemni_all_,state_,targets_,i,t)
 
-    
-    # ***** TEST ***** #
-    # add exluded them back in
+    # add exluded back in
     for ii in exclusion:
         trajectory = np.insert(trajectory,ii,targets[:,ii],axis = 1)
-        trajectory[0:2,ii] = 5+ii # just move away from the swarm
+        trajectory[0:2,ii] = ii + 5 # just move away from the swarm
+        trajectory[2,ii] = 15 + ii 
         lemni = np.insert(lemni,ii,lemni_all[i-1,ii],axis = 1)
-        # consider pins (for plotting colors only)
+        # label excluded as pins (for plotting colors only)
         pins_all[i-1,ii,ii] = 1       
-    # ***** TEST ***** #
             
     #%% Prep for compute commands (next step)
     # ----------------------------
