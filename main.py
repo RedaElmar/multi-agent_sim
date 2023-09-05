@@ -32,6 +32,7 @@ import matplotlib.pyplot as plt
 plt.style.use('default')
 #plt.style.available
 #plt.style.use('Solarize_Light2')
+import copy
 
 # from root folder
 #import animation 
@@ -48,7 +49,7 @@ from utils import pinning_tools, lemni_tools, starling_tools, swarm_metrics, too
 # ------------------
 #np.random.seed(1)
 Ti      =   0         # initial time
-Tf      =   30     # final time (later, add a condition to break out when desirable conditions are met)
+Tf      =   60     # final time (later, add a condition to break out when desirable conditions are met)
 Ts      =   0.02      # sample time
 nVeh    =   7         # number of vehicles
 iSpread =   15         # initial spread of vehicles
@@ -283,16 +284,16 @@ while round(t,3) < Tf:
         
     #%% Compute Trajectory
     # --------------------
+     
+    # ***** TEST ***** #
+    exclusion = [2,5]               # which agents to exclude (manual, for now)
+    # remove excluded
+    state_ = np.delete(state, [exclusion], axis = 1)
+    targets_ = np.delete(targets, [exclusion], axis = 1)
+    lemni_all_ = np.delete(lemni_all, [exclusion], axis = 1)
     
-    # exclusion - which agents to exclude (manual, for now)
-    #exclusion = [2,5]
-    #state_ = state.copy()
-    #for i in exclusion:
-    #    state_ = np.delete(state_, i, 1)
-    
-
-    
-#%%         
+    # ***** TEST ***** #
+        
     #if flocking
     if tactic_type == 'reynolds' or tactic_type == 'saber' or tactic_type == 'starling' or tactic_type == 'pinning':
         trajectory = targets 
@@ -304,9 +305,19 @@ while round(t,3) < Tf:
     # if lemniscating
     elif tactic_type == 'lemni':
         #trajectory, lemni = lemni_tools.lemni_target(nVeh,lemni_all,state,targets,i,t)
-        trajectory, lemni = lemni_tools.lemni_target(lemni_all,state,targets,i,t)
+        #trajectory, lemni = lemni_tools.lemni_target(lemni_all,state,targets,i,t)
+        trajectory, lemni = lemni_tools.lemni_target(lemni_all_,state_,targets_,i,t)
 
     
+    # ***** TEST ***** #
+    # add exluded them back in
+    for ii in exclusion:
+        trajectory = np.insert(trajectory,ii,targets[:,ii],axis = 1)
+        trajectory[0:2,ii] = 5+ii # just move away from the swarm
+        lemni = np.insert(lemni,ii,lemni_all[i-1,ii],axis = 1)
+        # consider pins (for plotting colors only)
+        pins_all[i-1,ii,ii] = 1       
+    # ***** TEST ***** #
             
     #%% Prep for compute commands (next step)
     # ----------------------------

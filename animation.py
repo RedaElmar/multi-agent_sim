@@ -300,7 +300,7 @@ def animateMe(Ts, t_all, states_all, cmds_all, targets_all, obstacles_all, walls
         
         
 
-    ani = animation.FuncAnimation(fig=fig, func=update, blit=False, frames=len(t_all[0:-2:numFrames]), interval=(Ts*500*numFrames))
+    ani = animation.FuncAnimation(fig=fig, func=update, blit=False, frames=len(t_all[0:-2:numFrames]), interval=(Ts*100*numFrames))
     ani.save('Figs/test_animation3D.gif')
     plt.show()
 

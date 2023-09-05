@@ -46,7 +46,7 @@ quat_0_ = quat.quatjugate(quat_0)               # used to untwist
 
 
 #%% Swarm membership
-mbrs = 4    # 0 = all; 1+ denotes how many (randomly selected)
+#mbrs = 4    # 0 = all; 1+ denotes how many (randomly selected)
 
 #%% Useful functions 
 
