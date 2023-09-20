@@ -151,11 +151,11 @@ for i in range(0,states_all.shape[0]):
 fig, ax = plt.subplots()
 ax2 = ax.twinx()
 
-line_list = ["--","-",":"]
+line_list = ["-","--",":"]
 l1 = 0
 
 for i in [3]: #range(0,states_all.shape[2]):
-    for j in [2,5,6]: #range(0,states_all.shape[2]):
+    for j in [5,6,2]: #range(0,states_all.shape[2]):
         ax.plot(t_all[int(35/0.02):int(75/0.02)],seps_all[int(35/0.02):int(75/0.02),i,j],line_list[l1], color = 'tab:blue')
         cmds_sum = cmds_all[int(35/0.02):int(75/0.02),0,3]+cmds_all[int(35/0.02):int(75/0.02),1,3]+cmds_all[int(35/0.02):int(75/0.02),2,3]        
         #ax2.plot(t_all[int(35/0.02):int(75/0.02)],cmds_all[int(35/0.02):int(75/0.02),0,3], '--', linewidth = 0.7, color = 'tab:red')
@@ -172,12 +172,12 @@ ax.axvline(x = 45, color = 'black', linestyle = '--')
 #ax.axvline(x = 115, color = 'black', linestyle = '--')
 
 #ldg = list(range(0,states_all.shape[2]))
-ax.legend(['Leading - Closing','Lagging','Leading - Departing'], loc = 'upper right')
+ax.legend(['Leading','Lagging - Departing','Lagging - Compensating'], loc = 'upper center')
 
 ax.tick_params(axis='y',colors ='tab:blue')
 ax2.tick_params(axis='y',colors ='tab:green')
 
-ax.set(xlabel='Time [s]', ylabel='Separation [m]',
-       title='Compensation after Agent Departure')
+ax.set(xlabel='Time [s]',title='Compensation after Agent Departure')
 #ax2.set(title='Control Inputs')
 ax2.set_ylabel('Sum of Control Inputs [m^2]', color='tab:green')
+ax.set_ylabel('Separation [m]', color='tab:blue')
