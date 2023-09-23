@@ -50,9 +50,9 @@ from utils import pinning_tools, lemni_tools, starling_tools, swarm_metrics, too
 # ------------------
 np.random.seed(1)
 Ti      =   0       # initial time
-Tf      =   120      # final time (later, add a condition to break out when desirable conditions are met)
+Tf      =   140      # final time (later, add a condition to break out when desirable conditions are met)
 Ts      =   0.02    # sample time
-nVeh    =   10      # number of vehicles
+nVeh    =   5      # number of vehicles
 iSpread =   15      # initial spread of vehicles
 tSpeed  =   0       # speed of target
 rVeh    =   0.5     # physical radius of vehicle 
@@ -291,30 +291,43 @@ while round(t,3) < Tf:
         #exclusion = [random.randint(0, nVeh-1)]
         #print(exclusion)
         
-    # EXPIRMENT # 2 - manually exclude agents from the swarm
-    # for simulation
+    # # EXPIRMENT # 2 - manually exclude agents from the swarm
+    # # for simulation
+    # if t < 20:
+    #     exclusion = [2]
+    # if t > 20 and t <= 45:
+    #     exclusion = [2,7]
+    # if t > 45 and t <= 65:
+    #     exclusion = [1]
+    # if t > 45 and t <= 75:
+    #     exclusion = [1,6]
+    # if t > 75 and t <= 90:
+    #     exclusion = [3]
+    # if t > 75 and t <= 100:
+    #     exclusion = [3,7]
+    # if t > 100 and t <= 115:
+    #     exclusion = [9]
+    # if t > 115 and t <= 120:
+    #     exclusion = [5]
+    # if t > 120 and t <= 150:
+    #     exclusion = [4]
+    # if t > 150 and t <= 185:
+    #     exclusion = [4,8]
+    # if t > 185 and t <= 200:
+    #     exclusion = [6]
+        
+    # Experiment #3 - remove 2 then remove 2
     if t < 20:
-        exclusion = [2]
-    if t > 20 and t <= 45:
-        exclusion = [2,7]
-    if t > 45 and t <= 65:
+        exclusion = []
+    if t > 20 and t <= 50:
         exclusion = [1]
-    if t > 45 and t <= 75:
-        exclusion = [1,6]
-    if t > 75 and t <= 90:
-        exclusion = [3]
-    if t > 75 and t <= 100:
-        exclusion = [3,7]
-    if t > 100 and t <= 115:
-        exclusion = [9]
-    if t > 115 and t <= 120:
-        exclusion = [5]
-    if t > 120 and t <= 150:
-        exclusion = [4]
-    if t > 150 and t <= 185:
-        exclusion = [4,8]
-    if t > 185 and t <= 200:
-        exclusion = [6]
+    if t > 50 and t <= 80:
+        exclusion = [1,2]
+    if t > 80 and t <= 110:
+        exclusion = [2]
+    if t > 110 and t <= 140:
+        exclusion = []
+
            
     # create a temp exlusionary set
     state_ = np.delete(state, [exclusion], axis = 1)

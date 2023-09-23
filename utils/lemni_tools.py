@@ -24,7 +24,7 @@ from utils import encirclement_tools as encircle_tools
 # tunable
 c1_d        = 1             # gain for position (q)
 c2_d        = 1*np.sqrt(2)  # gain for velocity (p)
-lemni_type  = 3
+lemni_type  = 4
             
     # // Explcit definition of rotation (https://ieeexplore.ieee.org/document/9931405)
     #   0 = lemniscate of Gerono - surveillance (/^\)

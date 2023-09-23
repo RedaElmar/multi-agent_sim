@@ -149,35 +149,62 @@ for i in range(0,states_all.shape[0]):
     seps_all[i,:,:]=cdist(states_all[i,0:3,:].transpose(), states_all[i,0:3,:].transpose())    
 
 fig, ax = plt.subplots()
-ax2 = ax.twinx()
 
-line_list = ["-","--",":"]
+
+#line_list = ["-","--",":","._"]
+line_list = [":",":","-","dashdot"]
 l1 = 0
 
-for i in [3]: #range(0,states_all.shape[2]):
-    for j in [5,6,2]: #range(0,states_all.shape[2]):
-        ax.plot(t_all[int(35/0.02):int(75/0.02)],seps_all[int(35/0.02):int(75/0.02),i,j],line_list[l1], color = 'tab:blue')
-        cmds_sum = cmds_all[int(35/0.02):int(75/0.02),0,3]+cmds_all[int(35/0.02):int(75/0.02),1,3]+cmds_all[int(35/0.02):int(75/0.02),2,3]        
+veh_choose = 0
+starti = 20
+endi = 140
+for i in [veh_choose]: #range(0,states_all.shape[2]):
+    for j in [1,2,3,4]: #range(0,states_all.shape[2]):
+        ax.plot(t_all[int(starti/0.02):int(endi/0.02)],seps_all[int(starti/0.02):int(endi/0.02),i,j],linestyle = line_list[l1], color = 'tab:blue')
+        cmds_sum = cmds_all[int(starti/0.02):int(endi/0.02),0,veh_choose]+cmds_all[int(starti/0.02):int(endi/0.02),1,veh_choose]+cmds_all[int(starti/0.02):int(endi/0.02),2,veh_choose]        
         #ax2.plot(t_all[int(35/0.02):int(75/0.02)],cmds_all[int(35/0.02):int(75/0.02),0,3], '--', linewidth = 0.7, color = 'tab:red')
         #ax2.plot(t_all[int(35/0.02):int(75/0.02)],cmds_all[int(35/0.02):int(75/0.02),1,3], '--',linewidth = 0.7, color ='tab:red')
         #ax2.plot(t_all[int(35/0.02):int(75/0.02)],cmds_all[int(35/0.02):int(75/0.02),2,3], '--', linewidth = 0.7, color = 'tab:red')
-        ax2.plot(t_all[int(35/0.02):int(75/0.02)],cmds_sum, '-', linewidth = 1, color = 'tab:green')
+        ax2.plot(t_all[int(starti/0.02):int(endi/0.02)],cmds_sum, '-', linewidth = 1, color = 'tab:green')
         l1+=1
 
+# # Exp #2
+# #ax.axvline(x = 20, color = 'black', linestyle = '--')
+# ax.axvline(x = 45, color = 'black', linestyle = '--')
+# #ax.axvline(x = 75, color = 'black', linestyle = '--')
+# #ax.axvline(x = 100, color = 'black', linestyle = '--')
+# #ax.axvline(x = 115, color = 'black', linestyle = '--')
 
-#ax.axvline(x = 20, color = 'black', linestyle = '--')
-ax.axvline(x = 45, color = 'black', linestyle = '--')
-#ax.axvline(x = 75, color = 'black', linestyle = '--')
-#ax.axvline(x = 100, color = 'black', linestyle = '--')
-#ax.axvline(x = 115, color = 'black', linestyle = '--')
+# Exp #3 
+ax.legend(['Arriving/Departing','Arriving/Departing', 'Consistent Neighbour', 'Compensating Neighbour'])
+ax.set_xlim(starti,endi)
+ax.axvline(x = 20, color = 'black', linestyle = '--')
+ax.axvline(x = 50, color = 'black', linestyle = '--')
+ax.axvline(x = 80, color = 'black', linestyle = '--')
+ax.axvline(x = 110, color = 'black', linestyle = '--')
+r = 5
+N = 4
+angle = np.sqrt(2*r**2-2*r**2*np.cos(2*np.pi/N))
+ax.axhline(y=angle, xmin=0/(140-20), xmax=30/(140-20),color = 'red', linestyle = '--')
+N = 3
+angle = np.sqrt(2*r**2-2*r**2*np.cos(2*np.pi/N))
+ax.axhline(y=angle, xmin=30/(140-20), xmax=60/(140-20),color = 'red', linestyle = '--')
+N = 4
+angle = np.sqrt(2*r**2-2*r**2*np.cos(2*np.pi/N))
+ax.axhline(y=angle, xmin=60/(140-20), xmax=90/(140-20),color = 'red', linestyle = '--')
+N = 5
+angle = np.sqrt(2*r**2-2*r**2*np.cos(2*np.pi/N))
+ax.axhline(y=angle, xmin=90/(140-20), xmax=120/(140-20),color = 'red', linestyle = '--')
+
 
 #ldg = list(range(0,states_all.shape[2]))
-ax.legend(['Leading','Lagging - Departing','Lagging - Compensating'], loc = 'upper center')
+#ax.legend(['Leading','Lagging - Departing','Lagging - Compensating'], loc = 'upper center')
 
 ax.tick_params(axis='y',colors ='tab:blue')
-ax2.tick_params(axis='y',colors ='tab:green')
-
-ax.set(xlabel='Time [s]',title='Compensation after Agent Departure')
-#ax2.set(title='Control Inputs')
-ax2.set_ylabel('Sum of Control Inputs [m^2]', color='tab:green')
+ax.set(xlabel='Time [s]',title='Separation from Selected Agent')
 ax.set_ylabel('Separation [m]', color='tab:blue')
+
+# # UNCOMMENT THESE FOR second axis
+# ax2 = ax.twinx()
+# ax2.tick_params(axis='y',colors ='tab:green')
+# ax2.set_ylabel('Sum of Control Inputs [m^2]', color='tab:green')
