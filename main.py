@@ -48,23 +48,23 @@ from utils import pinning_tools, lemni_tools, starling_tools, swarm_metrics, too
 
 #%% Setup Simulation
 # ------------------
-np.random.seed(1)
+np.random.seed(2)
 Ti      =   0       # initial time
-Tf      =   140      # final time (later, add a condition to break out when desirable conditions are met)
+Tf      =   30      # final time (later, add a condition to break out when desirable conditions are met)
 Ts      =   0.02    # sample time
-nVeh    =   5      # number of vehicles
+nVeh    =   5       # number of vehicles
 iSpread =   15      # initial spread of vehicles
 tSpeed  =   0       # speed of target
 rVeh    =   0.5     # physical radius of vehicle 
 exclusion = []      # initialization of what agents to exclude, default empty
 
 tactic_type = 'lemni'     
-                # reynolds = Reynolds flocking + Olfati-Saber obstacle
-                # saber = Olfati-Saber flocking
-                # starling = swar like starlings 
-                # circle = encirclement
-                # lemni = dynamic lemniscates and other closed curves
-                # pinning = pinning control
+                # reynolds  = Reynolds flocking + Olfati-Saber obstacle
+                # saber     = Olfati-Saber flocking
+                # starling  = swarm like starlings 
+                # circle    = encirclement
+                # lemni     = dynamic lemniscates (and other closed curves)
+                # pinning   = pinning control
 
 # if using reynolds, need make target an obstacle 
 if tactic_type == 'reynolds':
@@ -316,17 +316,17 @@ while round(t,3) < Tf:
     # if t > 185 and t <= 200:
     #     exclusion = [6]
         
-    # Experiment #3 - remove 2 then remove 2
-    if t < 20:
-        exclusion = []
-    if t > 20 and t <= 50:
-        exclusion = [1]
-    if t > 50 and t <= 80:
-        exclusion = [1,2]
-    if t > 80 and t <= 110:
-        exclusion = [2]
-    if t > 110 and t <= 140:
-        exclusion = []
+    # # Experiment #3 - remove 2 then remove 2
+    # if t < 20:
+    #     exclusion = []
+    # if t > 20 and t <= 50:
+    #     exclusion = [1]
+    # if t > 50 and t <= 80:
+    #     exclusion = [1,2]
+    # if t > 80 and t <= 110:
+    #     exclusion = [2]
+    # if t > 110 and t <= 140:
+    #     exclusion = []
 
            
     # create a temp exlusionary set

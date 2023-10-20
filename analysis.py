@@ -208,3 +208,26 @@ ax.set_ylabel('Separation [m]', color='tab:blue')
 # ax2 = ax.twinx()
 # ax2.tick_params(axis='y',colors ='tab:green')
 # ax2.set_ylabel('Sum of Control Inputs [m^2]', color='tab:green')
+
+#%%
+# for the stability proof, we are interested in ensuring the real part of the
+# the quaternion satisfies: 2 cos^(-1) (w) < pi
+# which we pull from the lemni as follows
+nVeh = 5
+real_part = np.zeros((lemni_all.shape[0],5))
+real_part_ = np.zeros((lemni_all.shape[0],5))
+unit_lem    = np.array([1,0,0]).reshape((3,1)) 
+#from utils import quaternions as quat
+for i in range(0,nVeh):
+    for k in range(0,lemni_all.shape[0]):
+        #temp = quat.e2q(lemni_all[k,i]*unit_lem.ravel())
+        # gerono (with shift)
+        real_part[k,i] = -np.sqrt(2)*np.sqrt(1 - np.sin(lemni_all[k,i]))/2
+        real_part_[k,i] = 2*np.arccos(real_part[k,i])
+        
+%varexp --plot real_part_
+
+
+
+
+
